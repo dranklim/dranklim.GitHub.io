@@ -1,0 +1,268 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>NVRAM在UEFI中的应用 | UEFIWARM</title><meta name="author" content="Yohanz Lu"><meta name="copyright" content="Yohanz Lu"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="1. NVRAM技术概述非易失性随机访问存储器(NVRAM)在UEFI规范中承担着固件与操作系统之间的持久化数据存储任务，主要特性包括：  UEFI变量存储（Variable Services） 跨启动周期的配置保存 安全启动相关参数存储 硬件配置存储（如CPU超频参数） 设备初始化状态跟踪  新增实际应用案例： 1234567891011&#x2F;&#x2F; 存储显示器EDID信息示例EFI_STATUS Sa">
+<meta property="og:type" content="website">
+<meta property="og:title" content="NVRAM在UEFI中的应用">
+<meta property="og:url" content="https://uefiwarm.yohanz.com/2024/02/25/nvram-in-uefi/index.html">
+<meta property="og:site_name" content="UEFIWARM">
+<meta property="og:description" content="1. NVRAM技术概述非易失性随机访问存储器(NVRAM)在UEFI规范中承担着固件与操作系统之间的持久化数据存储任务，主要特性包括：  UEFI变量存储（Variable Services） 跨启动周期的配置保存 安全启动相关参数存储 硬件配置存储（如CPU超频参数） 设备初始化状态跟踪  新增实际应用案例： 1234567891011&#x2F;&#x2F; 存储显示器EDID信息示例EFI_STATUS Sa">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://uefiwarm.yohanz.com/img/UEFIWarm_logo.png">
+<meta property="article:published_time" content="2024-02-25T00:00:00.000Z">
+<meta property="article:modified_time" content="2025-03-03T13:35:28.136Z">
+<meta property="article:author" content="Yohanz Lu">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://uefiwarm.yohanz.com/img/UEFIWarm_logo.png"><link rel="shortcut icon" href="/img/bitbug_favicon16x16.ico"><link rel="canonical" href="https://uefiwarm.yohanz.com/2024/02/25/nvram-in-uefi/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'NVRAM在UEFI中的应用',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'page'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="page" id="body-wrap"><header class="not-home-page" id="page-header" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="https://www.helloimg.com/i/2025/02/24/67bc7a8af1fba.png" alt="Logo"><span class="site-name">UEFIWARM</span></a></span><div id="menus"></div></nav><div id="page-site-info"><h1 id="site-title">NVRAM在UEFI中的应用</h1></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="1-NVRAM技术概述"><a href="#1-NVRAM技术概述" class="headerlink" title="1. NVRAM技术概述"></a>1. NVRAM技术概述</h2><p>非易失性随机访问存储器(NVRAM)在UEFI规范中承担着固件与操作系统之间的持久化数据存储任务，主要特性包括：</p>
+<ul>
+<li>UEFI变量存储（Variable Services）</li>
+<li>跨启动周期的配置保存</li>
+<li>安全启动相关参数存储</li>
+<li>硬件配置存储（如CPU超频参数）</li>
+<li>设备初始化状态跟踪</li>
+</ul>
+<p>新增实际应用案例：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 存储显示器EDID信息示例</span></span><br><span class="line">EFI_STATUS <span class="title function_">SaveEdidInfo</span><span class="params">()</span> &#123;</span><br><span class="line">  UINT8 edid[<span class="number">128</span>] = &#123; <span class="comment">/* EDID数据 */</span> &#125;;</span><br><span class="line">  <span class="keyword">return</span> gRT-&gt;SetVariable(</span><br><span class="line">    <span class="string">L&quot;DisplayEdid&quot;</span>,</span><br><span class="line">    &amp;EdidVendorGuid,</span><br><span class="line">    EFI_VARIABLE_NON_VOLATILE | EFI_VARIATURE_BOOTSERVICE_ACCESS,</span><br><span class="line">    <span class="keyword">sizeof</span>(edid),</span><br><span class="line">    edid</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-UEFI-NVRAM结构"><a href="#2-UEFI-NVRAM结构" class="headerlink" title="2. UEFI NVRAM结构"></a>2. UEFI NVRAM结构</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 增强存储结构定义</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">  EFI_GUID    VendorGuid;</span><br><span class="line">  CHAR16      Name[<span class="number">256</span>];</span><br><span class="line">  UINT32      Attributes;</span><br><span class="line">  UINTN       DataSize;</span><br><span class="line">  VOID        *Data;</span><br><span class="line">&#125; VARIABLE_STORE_ENTRY;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 新增变量属性组合示例</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> BOOT_ACCESS (EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> RUNTIME_ACCESS (EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_RUNTIME_ACCESS)</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="3-运行时服务API"><a href="#3-运行时服务API" class="headerlink" title="3. 运行时服务API"></a>3. 运行时服务API</h2><p>通过Runtime Services操作NVRAM：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">EFI_STATUS <span class="title function_">SetVariable</span><span class="params">(</span></span><br><span class="line"><span class="params">  CHAR16        *Name,</span></span><br><span class="line"><span class="params">  EFI_GUID      *VendorGuid,</span></span><br><span class="line"><span class="params">  UINT32        Attributes,</span></span><br><span class="line"><span class="params">  UINTN         DataSize,</span></span><br><span class="line"><span class="params">  <span class="type">void</span>          *Data</span></span><br><span class="line"><span class="params">)</span>;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 读取变量示例</span></span><br><span class="line">UINTN size = <span class="number">0</span>;</span><br><span class="line">EFI_STATUS status = GetVariable(<span class="string">L&quot;BootOrder&quot;</span>, &amp;gEfiGlobalVariableGuid, <span class="literal">NULL</span>, &amp;size, buffer);</span><br><span class="line"><span class="keyword">if</span> (EFI_ERROR(status)) &#123;</span><br><span class="line">  Print(<span class="string">L&quot;Error retrieving variable: %r\n&quot;</span>, status);</span><br><span class="line">  <span class="comment">// 错误代码说明：</span></span><br><span class="line">  <span class="comment">// EFI_NOT_FOUND (0x800000000000000E) - 变量不存在</span></span><br><span class="line">  <span class="comment">// EFI_BUFFER_TOO_SMALL (0x8000000000000008) - 缓冲区不足</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-安全实践"><a href="#4-安全实践" class="headerlink" title="4. 安全实践"></a>4. 安全实践</h2><p>新增安全属性矩阵表：</p>
+<table>
+<thead>
+<tr>
+<th>属性组合</th>
+<th>存储位置</th>
+<th>访问权限</th>
+<th>典型应用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NV+BS</td>
+<td>SPI Flash</td>
+<td>仅引导阶段</td>
+<td>启动顺序配置</td>
+</tr>
+<tr>
+<td>NV+RT</td>
+<td>RTC RAM</td>
+<td>操作系统运行时</td>
+<td>硬件时钟设置</td>
+</tr>
+<tr>
+<td>NV+BS+AT</td>
+<td>安全存储区</td>
+<td>需要身份验证</td>
+<td>安全启动密钥</td>
+</tr>
+<tr>
+<td>NV+RT+WRITE_ONCE</td>
+<td>写保护区域</td>
+<td>一次性写入</td>
+<td>固件版本信息</td>
+</tr>
+<tr>
+<td>BS+RT</td>
+<td>内存</td>
+<td>临时存储（重启丢失）</td>
+<td>调试日志缓存</td>
+</tr>
+</tbody></table>
+<ul>
+<li>使用AuthVariable实现安全变量</li>
+<li>部署Secure Boot密钥链</li>
+<li>防篡改校验机制</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 写保护变量设置</span></span><br><span class="line">SetVariable(</span><br><span class="line">  <span class="string">L&quot;SecureBootKeys&quot;</span>,</span><br><span class="line">  &amp;gEfiSecurityPkgTokenSpaceGuid,</span><br><span class="line">  EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_RUNTIME_ACCESS | EFI_VARIABLE_WRITE_ONCE,</span><br><span class="line">  <span class="keyword">sizeof</span>(keys),</span><br><span class="line">  keys</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="5-开发调试"><a href="#5-开发调试" class="headerlink" title="5. 开发调试"></a>5. 开发调试</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">查看UEFI变量</span></span><br><span class="line">sudo efivar -l</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">读取特定变量</span></span><br><span class="line">sudo efivar -p BootOrder</span><br></pre></td></tr></table></figure>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 通过Windows UEFI变量API访问</span></span><br><span class="line"><span class="variable">$bootOrder</span> = <span class="built_in">Get-UEFIVariable</span> <span class="literal">-Namespace</span> <span class="string">&quot;&#123;8be4df61-93ca-11d2-aa0d-00e098032b8c&#125;&quot;</span> <span class="literal">-Name</span> <span class="string">&quot;BootOrder&quot;</span></span><br><span class="line"><span class="built_in">Set-UEFIVariable</span> <span class="literal">-Namespace</span> <span class="string">&quot;&#123;8be4df61-93ca-11d2-aa0d-00e098032b8c&#125;&quot;</span> <span class="literal">-Name</span> <span class="string">&quot;BootNext&quot;</span> <span class="literal">-Value</span> <span class="number">0</span>x0001</span><br></pre></td></tr></table></figure>
+
+<h2 id="6-优化建议："><a href="#6-优化建议：" class="headerlink" title="6. 优化建议："></a>6. 优化建议：</h2><ol>
+<li>单个变量大小不超过1KB</li>
+<li>总变量数量控制在200个以内</li>
+<li>高频访问变量使用内存缓存</li>
+<li>变量命名规范清晰</li>
+</ol>
+<blockquote>
+<p>参考：<a target="_blank" rel="noopener" href="https://uefi.org/specs/UEFI/2.10/08_Services_Runtime_Services.html">UEFI Spec Chapter 8.2</a></p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="https://uefiwarm.yohanz.com">Yohanz Lu</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="https://uefiwarm.yohanz.com/2024/02/25/nvram-in-uefi/">https://uefiwarm.yohanz.com/2024/02/25/nvram-in-uefi/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/UEFIWarm_logo.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav id="pagination"><div class="pagination"></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/UEFIWarm_logo.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Yohanz Lu</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">3</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">1</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/dranklim"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/03/hello-world/" title="Notes for my deployment of Hexo">Notes for my deployment of Hexo</a><time datetime="2025-03-03T13:35:28.136Z" title="Created 2025-03-03 13:35:28">2025-03-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/02/27/post/" title="TEST"><img src="/img/UEFIWarm_logo.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="TEST"/></a><div class="content"><a class="title" href="/2025/02/27/post/" title="TEST">TEST</a><time datetime="2025-02-27T23:06:08.000Z" title="Created 2025-02-27 23:06:08">2025-02-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/02/25/nvram-in-uefi/" title="NVRAM在UEFI中的应用">NVRAM在UEFI中的应用</a><time datetime="2024-02-25T00:00:00.000Z" title="Created 2024-02-25 00:00:00">2024-02-25</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
+            <i class="fas fa-folder-open"></i>
+            <span>Categories</span>
+            
+          </div>
+          <ul class="card-category-list" id="aside-cat-list">
+            <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/test/"><span class="card-category-list-name">test</span><span class="card-category-list-count">1</span></a></li>
+          </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>Tags</span></div><div class="card-tag-cloud"><a href="/tags/test/" style="font-size: 1.1em; color: #999">test</a></div></div><div class="card-widget card-archives">
+    <div class="item-headline">
+      <i class="fas fa-archive"></i>
+      <span>Archives</span>
+      
+    </div>
+  
+    <ul class="card-archive-list">
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2025/03/">
+            <span class="card-archive-list-date">
+              March 2025
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2025/02/">
+            <span class="card-archive-list-date">
+              February 2025
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2024/02/">
+            <span class="card-archive-list-date">
+              February 2024
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+    </ul>
+  </div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>Website Info</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">Article Count :</div><div class="item-count">3</div></div><div class="webinfo-item"><div class="item-name">Unique Visitors :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">Page Views :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">Last Update :</div><div class="item-count" id="last-push-date" data-lastPushDate="2025-03-03T14:47:49.253Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347);"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2025 By Yohanz Lu</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.3</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
